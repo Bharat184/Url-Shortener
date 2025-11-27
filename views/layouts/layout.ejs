@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="stylesheet" href="/css/output.css" />
+  <title><%= title %></title>
+</head>
+<body class="min-h-screen bg-gray-900 text-white">
+
+  <% if (user) { %>
+    <nav class="flex justify-between items-center px-10 py-5 bg-gray-800/50 backdrop-blur border-b border-white/10">
+      <h1 class="text-2xl font-bold">MyApp</h1>
+      <a href="/logout" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg transition">
+        Logout
+      </a>
+    </nav>
+  <% } else { %>
+    <nav class="flex justify-between items-center px-10 py-5 bg-gray-800/50 backdrop-blur border-b border-white/10">
+      <h1 class="text-2xl font-bold">MyApp</h1>
+      <a href="/login" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg transition">
+        Login
+      </a>
+    </nav>
+  <% } %>
+
+  <main class="flex items-center justify-center p-10 w-full">
+    <%- body %>
+  </main>
+
+</body>
+</html>

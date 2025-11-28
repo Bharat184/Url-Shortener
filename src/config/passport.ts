@@ -2,26 +2,18 @@ import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import bcrypt from "bcryptjs";
-
-interface User {
-  id: number;
-  email?: string;
-  password?: string;
-  googleId?: string;
-}
-
-const users: User[] = []; // TEMP DB
+import { createUser, getUser } from "../services/user-service";
 
 export function initPassport() {
   // LOCAL STRATEGY
   passport.use(
     new LocalStrategy(
       { usernameField: "email" },
-      (email, password, done) => {
-        const user = users.find((u) => u.email === email);
+      async (email, password, done) => {
+        const user = await getUser(email);
         if (!user) return done(null, false);
 
-        if (!user.password) return done(null, false);
+        if (!user.password) return done(null, user);
 
         bcrypt.compare(password, user.password, (err, match) => {
           if (match) return done(null, user);
@@ -39,16 +31,12 @@ export function initPassport() {
         clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
         callbackURL: "/auth/google/callback",
       },
-      (accessToken, refreshToken, profile, done) => {
-        let user = users.find((u) => u.googleId === profile.id);
+      async (accessToken, refreshToken, profile, done) => {
+        const email = profile.emails?.[0].value;
+        let user = await getUser(email);
 
         if (!user) {
-          user = {
-            id: Date.now(),
-            googleId: profile.id,
-            email: profile.emails?.[0].value,
-          };
-          users.push(user);
+          user = await createUser({email, googleId: profile.id});
         }
 
         return done(null, user);
@@ -56,13 +44,13 @@ export function initPassport() {
     )
   );
 
-  // SESSION HANDLING
-  passport.serializeUser((user: any, done) => {
-    done(null, user.id);
-  });
+  // SESSION HANDLING USE THIS FOR SESSION
+  // passport.serializeUser((user: any, done) => {
+  //   done(null, user.id);
+  // });
 
-  passport.deserializeUser((id: number, done) => {
-    const user = users.find((u) => u.id === id);
-    done(null, user || false);
-  });
+  // passport.deserializeUser((id: number, done) => {
+  //   const user = users.find((u) => u.id === id);
+  //   done(null, user || false);
+  // });
 }

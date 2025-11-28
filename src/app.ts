@@ -9,8 +9,14 @@ import { initPassport } from "./config/passport";
 import { isAuthenticated } from "./middleware/auth";
 import { isGuest } from "./middleware/guest";
 import jwt from "jsonwebtoken";
+import cookieParser from "cookie-parser";
+import { jwtCreateToken } from "./utils/jwt-create-token";
+import { connectDB } from "./config/db";
+import userRoutes from './routes/user-routes';
+import { createUser, getUser } from "./services/user-service";
 
 dotenv.config();
+connectDB();
 const app = express();
 
 app.set("view engine", "ejs");
@@ -20,6 +26,7 @@ app.set("layout", "./layouts/layout");
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
+app.use(cookieParser());
 
 const viewData = {user: null, title: 'Home'};
 
@@ -40,10 +47,9 @@ app.use((req: any, res, next) => {
 
 initPassport();
 
-// TEMP DB
-const users: any[] = [];
-
 /* ROUTES */
+app.use('/user', userRoutes);
+
 app.get("/", isAuthenticated, (req, res) => {
   res.render("home", { ...viewData, user: req.user });
 });
@@ -63,34 +69,37 @@ app.get("/dashboard", isAuthenticated, (req, res) => {
 // REGISTER
 app.post("/register", async (req, res) => {
   const { email, password } = req.body;
+  // if (TempDb.users.find(user => user.email === email)) {
+  //   return res.redirect('/login');
+  // }
+
+  if (await getUser(email)) {
+    return res.redirect('/login');
+  }
 
   const hashed = await bcrypt.hash(password, 10);
 
-  users.push({
-    id: Date.now(),
-    email,
-    password: hashed,
-  });
-
-  res.redirect("/login");
+  // TempDb.users.push(userData);
+  const user = await createUser({email, password: hashed});
+  const token = jwtCreateToken(user.email);
+  res.cookie('token', token, {httpOnly: true});
+  res.redirect("/");
 });
 
 // LOCAL LOGIN
 app.post(
   "/login",
-  passport.authenticate("local", {
-    successRedirect: "/dashboard",
-    failureRedirect: "/login",
-  }),
-  (req, res) => {
-    const token = jwt.sign(
-      { email: req.user.email },
-      process.env.JWT_SECRET!,
-      { expiresIn: "7d" }
-    );
+  (req, res, next) => {
+      passport.authenticate("local", (err, user) => {
+      // if (!err) {
+      //   return res.status(401).json({ message: user ? "Sign in with google only enabled" : "Invalid credentials" });
+      // }
 
-    res.cookie("token", token, { httpOnly: true, secure: false });
-    res.redirect("/dashboard");
+      const token = jwtCreateToken(user.email);
+
+      res.cookie("token", token, { httpOnly: true });
+      res.redirect("/");
+    })(req, res, next);
   }
 );
 
@@ -102,17 +111,18 @@ app.get(
 
 app.get(
   "/auth/google/callback",
-  passport.authenticate("google", { failureRedirect: "/login" }),
-  (req, res) => {
-     const token = jwt.sign(
-      { email: req.user.email },
-      process.env.JWT_SECRET!,
-      { expiresIn: "7d" }
-    );
+  (req, res, next) => {
+  passport.authenticate("google", (err, user) => {
+    if (!user) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
 
-    res.cookie("token", token, { httpOnly: true, secure: false });
-    res.redirect("/dashboard");
-  }
+    const token = jwtCreateToken(user.email);
+
+    res.cookie("token", token, { httpOnly: true });
+    return res.redirect("/");
+  })(req, res, next);
+}
 );
 
 // LOGOUT

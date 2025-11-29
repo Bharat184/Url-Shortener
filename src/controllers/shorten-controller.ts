@@ -7,7 +7,7 @@ export const shortenController = async (req: Request, res: Response) => {
     // @ts-ignore
     const userId = req.user._id; 
     const expiryDate = expiresAt ? new Date(expiresAt + "T23:59:59Z") : new Date();
-    const result = await createShortUrl(userId, longUrl, expiresAt);
+    const result = await createShortUrl(userId, longUrl, expiryDate);
     return res.redirect(`/dashboard?shortUrl=${result.code}`);
     // return res.status(201).json(result);
   } catch (err) {

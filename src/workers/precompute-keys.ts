@@ -2,19 +2,13 @@ import mongoose from "mongoose";
 import { ShortCodes } from "../models/short-code-model";
 import { generateShortCode } from "../utils/generate-short-code";
 import dotenv from "dotenv";
+import { connectDB } from "../config/db";
 
 dotenv.config();
 
 const MONGO_URI = process.env.MONGO_URI!;
 const MIN_POOL_SIZE = 200;
 const BATCH_SIZE = 20;
-
-async function ensureConnection() {
-  if (mongoose.connection.readyState === 0) {
-    await mongoose.connect(MONGO_URI);
-    console.log("Connected to MongoDB");
-  }
-}
 
 async function getFreeKeyCount() {
   return ShortCodes.countDocuments({ status: "free" });
@@ -42,7 +36,7 @@ async function insertBatch(count: number) {
 }
 
 async function refillPool() {
-  await ensureConnection();
+  await connectDB();
 
   const freeCount = await getFreeKeyCount();
   console.log("Current free key count:", freeCount);

@@ -1,4 +1,3 @@
-import { Interface } from "readline";
 import { User } from "../models/user-model";
 import { UserType } from "../models/user-model";
 

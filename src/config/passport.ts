@@ -12,8 +12,7 @@ export function initPassport() {
       async (email, password, done) => {
         const user = await getUser(email);
         if (!user) return done(null, false);
-
-        if (!user.password) return done(null, user);
+        if (!user?.password) return done(true, user);
 
         bcrypt.compare(password, user.password, (err, match) => {
           if (match) return done(null, user);

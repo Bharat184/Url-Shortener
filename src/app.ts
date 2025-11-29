@@ -14,6 +14,7 @@ import { jwtCreateToken } from "./utils/jwt-create-token";
 import { connectDB } from "./config/db";
 import userRoutes from './routes/user-routes';
 import { createUser, getUser } from "./services/user-service";
+import urlRoutes from './routes/url-routes';
 
 dotenv.config();
 connectDB();
@@ -49,6 +50,7 @@ initPassport();
 
 /* ROUTES */
 app.use('/user', userRoutes);
+app.use('/url', userRoutes);
 
 app.get("/", isAuthenticated, (req, res) => {
   res.render("home", { ...viewData, user: req.user });
@@ -69,9 +71,6 @@ app.get("/dashboard", isAuthenticated, (req, res) => {
 // REGISTER
 app.post("/register", async (req, res) => {
   const { email, password } = req.body;
-  // if (TempDb.users.find(user => user.email === email)) {
-  //   return res.redirect('/login');
-  // }
 
   if (await getUser(email)) {
     return res.redirect('/login');
@@ -81,7 +80,7 @@ app.post("/register", async (req, res) => {
 
   // TempDb.users.push(userData);
   const user = await createUser({email, password: hashed});
-  const token = jwtCreateToken(user.email);
+  const token = jwtCreateToken(user._id.toString());
   res.cookie('token', token, {httpOnly: true});
   res.redirect("/");
 });
@@ -91,11 +90,11 @@ app.post(
   "/login",
   (req, res, next) => {
       passport.authenticate("local", (err, user) => {
-      // if (!err) {
-      //   return res.status(401).json({ message: user ? "Sign in with google only enabled" : "Invalid credentials" });
-      // }
+      if (!user || err) {
+        return res.status(401).json({ message: err ? "Sign in with google only enabled" : "Invalid credentials" });
+      }
 
-      const token = jwtCreateToken(user.email);
+      const token = jwtCreateToken(user._id.toString());
 
       res.cookie("token", token, { httpOnly: true });
       res.redirect("/");
@@ -117,7 +116,7 @@ app.get(
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    const token = jwtCreateToken(user.email);
+    const token = jwtCreateToken(user._id.toString());
 
     res.cookie("token", token, { httpOnly: true });
     return res.redirect("/");

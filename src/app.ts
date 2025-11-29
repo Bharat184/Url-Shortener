@@ -1,4 +1,4 @@
-import express from "express";
+import express, {Request, Response } from "express";
 import session from "express-session";
 import passport from "passport";
 import bcrypt from "bcryptjs";
@@ -15,6 +15,7 @@ import { connectDB } from "./config/db";
 import userRoutes from './routes/user-routes';
 import { createUser, getUser } from "./services/user-service";
 import urlRoutes from './routes/url-routes';
+import { UrlHistory } from "./models/url-history-model";
 
 dotenv.config();
 connectDB();
@@ -42,7 +43,7 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 app.use((req: any, res, next) => {
-  res.locals.user = req.user;
+  res.locals.baseUrl = `${req.protocol}://${req.get("host")}`;
   next();
 });
 
@@ -50,10 +51,10 @@ initPassport();
 
 /* ROUTES */
 app.use('/user', userRoutes);
-app.use('/url', userRoutes);
 
 app.get("/", isAuthenticated, (req, res) => {
-  res.render("home", { ...viewData, user: req.user });
+  res.redirect('/dashboard');
+  // res.render("home", { ...viewData, user: req.user });
 });
 
 app.get("/login", isGuest, (req, res) => {
@@ -64,8 +65,21 @@ app.get("/register", isGuest, (req, res) => {
   res.render("register", {...viewData, title: 'Register'});
 });
 
-app.get("/dashboard", isAuthenticated, (req, res) => {
-  res.render("dashboard", {...viewData, title: 'Dashboard'});
+app.get("/dashboard", isAuthenticated, async (req: Request, res: Response) => {
+  // @ts-ignore
+  const userId = req.user!._id;
+   const urls = await UrlHistory.find({ userId })
+    .sort({ createdAt: -1 })
+    .lean();
+
+  res.render("dashboard", {
+    ...viewData,
+    title: "Dashboard",
+    urls,
+    shortUrl: req.query.shortUrl || null,
+    user: req.user,
+    baseUrl: res.locals.baseUrl
+  });
 });
 
 // REGISTER
@@ -129,5 +143,8 @@ app.get("/logout", (req, res) => {
   res.clearCookie("token");
   res.redirect("/login");
 });
+
+app.use('/', urlRoutes);
+
 
 app.listen(3000, () => console.log("Server running on http://localhost:3000"));

@@ -1,0 +1,36 @@
+<tr class="border-b">
+  <td class="py-2 px-3">
+    <a href="/<%= url.shortCode %>" target="_blank"
+      class="text-blue-600 font-medium">
+      <%= url.shortCode %>
+    </a>
+  </td>
+
+  <td class="py-2 px-3 max-w-sm">
+  <a href="<%= url.longUrl %>" target="_blank"
+     class="block text-gray-700 hover:text-blue-600 break-all line-clamp-2"
+     title="<%= url.longUrl %>">
+    <%= new URL(url.longUrl).hostname %>
+    <span class="text-gray-500">/...</span>
+  </a>
+</td>
+
+
+  <td class="py-2 px-3 text-center">
+    <%= url.clickCount %>
+  </td>
+
+  <td class="py-2 px-3 text-center font-medium
+    <%= url.status === "active" ? "text-green-600" : "text-red-600" %>">
+    <%= url.status %>
+  </td>
+
+  <td class="py-2 px-3 text-center">
+    <button
+      onclick="navigator.clipboard.writeText('<%= baseUrl + '/' + url.shortCode %>')"
+      class="bg-gray-200 hover:bg-gray-300 text-sm px-2 py-1 rounded"
+    >
+      Copy
+    </button>
+  </td>
+</tr>

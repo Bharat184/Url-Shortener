@@ -37,11 +37,3 @@ export const ShortCodes = mongoose.model<ShortCodeDoc>(
   shortCodeSchema
 );
 
-// TODO TOMORROW
-// KEY LOOKUP HOW DO WE PRECOMPUTE USING Queues or?
-// COOLDOWN PERIOD 
-// ROTATE UNUSED CODES
-// UI FORM TO CREATE
-// HISTORY WITH STATS
-// CACHING
-

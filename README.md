@@ -1,191 +1,205 @@
-## 📌 README.md — URL Shortener Service
-
 ```md
-# 🔗 URL Shortener with Expiry, Reusable Keys & Analytics
+# 🔗 URL Shortener
 
-A full-stack URL Shortener application built using **Node.js**, **Express**, **MongoDB**, and **EJS** with **TailwindCSS** UI.
+A production-ready URL shortener with:  
 
-Supports:
-- 🔐 User Registration / Login (Local + Google OAuth)
-- ✂️ Short URL Generation
-- 📊 Click Analytics tracking
-- ⏳ URL Expiry functionality
-- ♻️ Reusable short codes via cooldown workers
-- 📜 Full user-wise URL history
-- ☁️ Cloud-ready modular architecture
+- User authentication (local + Google OAuth)  
+- Short URL generation with reusable key pool  
+- Optional expiry date per link  
+- Automatic expiry and cooldown workers  
+- Dashboard with link history, click counts, status  
+- EJS + TailwindCSS based frontend  
 
 ---
 
-## 🚀 Features
+## 🧰 Features
 
-| Feature | Status |
-|--------|:-----:|
-| Create short URLs | ✔️ |
-| User Authentication (Local + Google OAuth) | ✔️ |
-| Expiry date selection | ✔️ |
-| Reusable key pool with cooldown | ✔️ |
-| Dashboard showing all user URLs | ✔️ |
-| Click analytics | ✔️ |
-| Copy short link button | ✔️ |
-| Modern UI using TailwindCSS + EJS | ✔️ |
+| ✅ | Feature |
+|:--:|---------|
+| 🔐 | User login / signup (email & Google) |
+| ✂️ | Short URL creation (unique key) |
+| ♻️ | Reusable short-code pool with cooldown logic |
+| 📄 | View history: long URL, short code, clicks, status, expiry |
+| 🛠️ | Worker jobs for expiry & code recycling |
+| 📦 | Modern modular architecture |
 
 ---
 
-## 🧱 Tech Stack
+## 📦 Tech Stack
 
-**Backend**
-- Node.js, Express.js
-- MongoDB + Mongoose
-- Redis (optional future caching)
-
-**Auth**
-- Passport.js
-- JWT + Cookies
-- Google OAuth2
-
-**Frontend**
-- EJS Templates
-- TailwindCSS
-
-**Workers**
-- Node Cron workers to:
-  - Mark URLs expired
-  - Release short codes back to pool
+- **Backend**: Node.js, Express.js, TypeScript  
+- **Database**: MongoDB + Mongoose  
+- **Authentication**: Passport.js, JWT, Cookies  
+- **Frontend**: EJS templating + TailwindCSS  
+- **Workers**: Node Cron jobs for expiry & cooldown  
 
 ---
+## 🏗️ System Architecture (with Caching)
 
-## 📂 Folder Structure
 
-```
+                         ┌─────────────────────────┐
+                         │        Browser / User    │
+                         └──────────────┬───────────┘
+                                        │
+                                        │ HTTP Request
+                                        ▼
+                          ┌─────────────────────────┐
+                          │      Express Server     │
+                          └──────────┬──────────────┘
+                                     │
+                      ┌──────────────┴───────────────┐
+                      │                              │
+                      │                              │
+                      ▼                              ▼
+           ┌─────────────────────┐         ┌───────────────────┐
+           │   Redis Cache       │         │  MongoDB Database  │
+           │ (GET shortcode hit) │         │ (URL + Key Pool)  │
+           └─────────┬──────────┘         └──────────┬────────┘
+                     │  HIT                               │ MISS (or write)
+                     │                                    │
+                     │                                    ▼
+                     │                        ┌──────────────────────┐
+                     │                        │ ShortCodes Collection │
+                     │                        │  - free / active     │
+                     │                        │  - cooldown          │
+                     │                        └─────────┬────────────┘
+                     │                                    │
+                     │                                    ▼
+                     │                        ┌──────────────────────┐
+                     │                        │ UrlHistory Collection │
+                     │                        │ - longUrl            │
+                     │                        │ - expiresAt          │
+                     │                        │ - clickCount         │
+                     │                        └─────────┬────────────┘
+                     │                                    │
+                     └────────────────────────────────────┘
+                                        │
+                             Update click counts
+                                        │
+                                        ▼
+                           Send redirect response
+                                   (302 Redirect)
 
-src/
-├ controllers/
-├ routes/
-├ models/
-├ services/
-├ workers/
-├ middleware/
-├ utils/
-├ views/ (EJS + Tailwind UI)
-└ config/
+## 🔁 Worker Processes
 
-```
+                             ┌─────────────────┐
+                             │ Expiry Worker   │
+                             └───────┬─────────┘
+                                     │
+                                     ▼
+                active URLs → expired → cooldown stage
+                                     │
+                                     ▼
+                             ┌─────────────────┐
+                             │Cooldown Worker  │
+                             └───────┬─────────┘
+                                     │
+                                     ▼
+                             Return code to free pool
 
-Worker Jobs:
-```
-
-src/workers/expiryWorker.ts     // active → expired → cooldown
-src/workers/cooldownWorker.ts   // cooldown → free
-
-```
-
----
-
-## 🗄️ Database Collections
-
-### 🔐 Users
-Stores registered users
-
-### 🔑 ShortCodes (key pool)
-```
-
-code: string
-status: "free" | "active" | "cooldown"
-activeHistoryId: ObjectId (UrlHistory mapping)
-cooldownUntil: Date
-
-```
-
-### 📜 UrlHistory
-```
-
-userId: ObjectId (User)
-shortCode: string
-longUrl: string
-clickCount: number
-status: "active" | "expired"
-expiresAt: Date | null
 
 ````
 
 ---
 
-## ⚙️ Setup Instructions
+## ⚙️ Installation
 
-### 1️⃣ Clone Repo
+### Steps
+
 ```bash
-git clone https://github.com/yourusername/url-shortener.git
-cd url-shortener
+git clone https://github.com/Bharat184/Url-Shortener.git
+cd Url-Shortener
+pnpm install
 ````
 
-### 2️⃣ Install Dependencies
-
-```bash
-npm install
-```
-
-### 3️⃣ Create `.env` File
+Create `.env` file in project root:
 
 ```env
 MONGO_URI=mongodb://127.0.0.1:27017/urlshortener
-JWT_SECRET=replace_me
-GOOGLE_CLIENT_ID=replace_me
-GOOGLE_CLIENT_SECRET=replace_me
+JWT_SECRET=your_jwt_secret
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_secret
 BASE_URL=http://localhost:3000
 ```
 
-### 4️⃣ Build + Run Dev Server
+Build the project:
 
 ```bash
-npm run dev
-```
-
-Server default:
-
-```
-http://localhost:3000
+pnpm build
 ```
 
 ---
 
-## 🏃 Worker Processes
+## 🚀 Running the App & Workers
 
-Workers handle expiry + cooldown automation.
-
-Run workers separately:
+### Start the web server
 
 ```bash
-npm run start:expiry
-npm run start:cooldown
+pnpm start
 ```
 
-Or combined:
+Open in browser: `http://localhost:3000`
+
+---
+
+### Start Worker Jobs
+
+Worker jobs manage:
+
+* Expiry of old URLs
+* Recycling of short-codes after cooldown
+
+Run in separate terminals:
 
 ```bash
-npm run workers
+pnpm start:expiry
+pnpm start:cooldown
+```
+
+Alternatively run both with a combined script:
+
+```bash
+pnpm workers
 ```
 
 ---
 
-## 🧪 API Endpoints
+## 🔄 Short-Code Lifecycle
 
-| Method | Endpoint       | Auth | Description              |
-| ------ | -------------- | ---- | ------------------------ |
-| POST   | `/url/shorten` | ✔️   | Create short link        |
-| GET    | `/:code`       | ❌    | Redirect using shortcode |
-| GET    | `/dashboard`   | ✔️   | User dashboard           |
+```text
+FREE → ACTIVE → EXPIRED → COOLDOWN → FREE
+```
 
----
-
-## 🎯 Future Enhancements
-
-* ⏱️ Countdown badges on dashboard (`Expires in 2 days`)
-* 📈 Analytics charts per URL
-* 🔳 QR Code generation
-* 🚀 Redis caching for ultra-fast redirects
-* 🌑 Dark Mode UI toggle
-* 📦 Docker support
+* **FREE** — Key is in pool, unused
+* **ACTIVE** — Assigned to an active URL
+* **EXPIRED** — URL expired, no longer valid
+* **COOLDOWN** — Short code blocked for a short window to avoid cached redirects
+* **FREE** — Code returned to pool for reuse
 
 ---
 
-If you like this project, feel free to ⭐ the repo or contribute!
+## 🔗 Main Endpoints & Routes
+
+| Method | Path           | Auth required | Description                   |
+| ------ | -------------- | ------------- | ----------------------------- |
+| POST   | `/shorten`     | ✅             | Create a new short URL        |
+| GET    | `/:code`       | ⛔             | Redirect to original long URL |
+| GET    | `/dashboard`   | ✅             | Show user’s URL history       |
+| GET    | `/login`       | ⛔             | Login page                    |
+| POST   | `/login`       | ⛔             | Authenticate user             |
+| GET    | `/register`    | ⛔             | Sign-up page                  |
+| POST   | `/register`    | ⛔             | Create a new user             |
+
+
+---
+
+## 📈 What Next / Future Enhancements
+
+* 📊 Click analytics graph (daily/weekly/monthly)
+* 🔳 QR code generation per short link
+* 🕒 Extend / renew expiry from dashboard
+* 🌑 Rate Limiter
+* 🔄 Redis caching for super-fast redirect
+* 📦 Docker / Kubernetes deployment config
+
+---

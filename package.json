@@ -5,14 +5,16 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "ts-node-dev src/app.ts",
+    "dev": "tsx watch src/app.ts",
     "build-css": "npx @tailwindcss/cli -i ./input.css -o ./public/css/output.css --watch",
-    "start:expiry": "npx tsc && node dist/workers/expiry-worker.js",
-    "start:cooldown": "npx tsc && node dist/workers/cooldown-worker.js",
+    "start:expiry": "tsx watch src/workers/expiry-worker.js",
+    "start:cooldown": "tsx watch src/workers/cooldown-worker.js",
+    "start:sync-count": "tsx watch src/workers/sync-count-worker.ts",
     "workers": "concurrently \"pnpm start:expiry\" \"pnpm start:cooldown\""
   },
   "keywords": [],
-  "author": "",
+  "author": "Bharat Chimariya",
+  "type": "module",
   "license": "ISC",
   "packageManager": "pnpm@10.21.0",
   "dependencies": {
@@ -30,7 +32,8 @@
     "mongoose": "^9.0.0",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
-    "passport-local": "^1.0.0"
+    "passport-local": "^1.0.0",
+    "redis": "^5.10.0"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",

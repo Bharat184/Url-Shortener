@@ -10,7 +10,6 @@ connectDB().then(() => {
 
 async function cooldownWorker() {
   const now = new Date();
-  console.log('yes');
 
   const readyToRelease = await ShortCodes.find({
     status: "cooldown",

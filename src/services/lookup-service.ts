@@ -10,7 +10,7 @@ export async function resolveShortUrl(code: string) {
     return doc ? doc : null;
   }
 
-  doc.clickCount++;
+  // doc.clickCount++;
   doc.save().catch(console.error);
 
   return doc;

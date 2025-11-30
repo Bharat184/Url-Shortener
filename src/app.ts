@@ -8,7 +8,6 @@ import expressLayouts from "express-ejs-layouts";
 import { initPassport } from "./config/passport";
 import { isAuthenticated } from "./middleware/auth";
 import { isGuest } from "./middleware/guest";
-import jwt from "jsonwebtoken";
 import cookieParser from "cookie-parser";
 import { jwtCreateToken } from "./utils/jwt-create-token";
 import { connectDB } from "./config/db";
@@ -16,6 +15,12 @@ import userRoutes from './routes/user-routes';
 import { createUser, getUser } from "./services/user-service";
 import urlRoutes from './routes/url-routes';
 import { UrlHistory } from "./models/url-history-model";
+import { dirname } from "path";
+import { fileURLToPath } from "url";
+
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 dotenv.config();
 connectDB();

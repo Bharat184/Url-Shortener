@@ -19,6 +19,7 @@
     "@tailwindcss/cli": "^4.1.17",
     "@types/mongoose": "^5.11.97",
     "bcryptjs": "^3.0.3",
+    "concurrently": "^9.2.1",
     "cookie-parser": "^1.4.7",
     "dotenv": "^17.2.3",
     "ejs": "^3.1.10",

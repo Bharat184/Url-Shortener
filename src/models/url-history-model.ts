@@ -8,7 +8,6 @@ export interface UrlHistoryDoc extends Document {
   longUrl: string;
   status: UrlHistoryStatus;
   clickCount: number;
-  createdAt: Date;
   expiresAt: Date | null;
 }
 

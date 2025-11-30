@@ -30,8 +30,6 @@ const shortCodeSchema = new Schema<ShortCodeDoc>(
   { timestamps: true }
 );
 
-shortCodeSchema.index({ code: 1 }, { unique: true });
-
 export const ShortCodes = mongoose.model<ShortCodeDoc>(
   "ShortCodes",
   shortCodeSchema

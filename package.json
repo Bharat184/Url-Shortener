@@ -5,12 +5,12 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "tsx watch src/app.ts",
+    "dev": "npx tsx watch src/app.ts",
     "build-css": "npx @tailwindcss/cli -i ./input.css -o ./public/css/output.css --watch",
-    "start:expiry": "tsx watch src/workers/expiry-worker.js",
-    "start:cooldown": "tsx watch src/workers/cooldown-worker.js",
-    "start:sync-count": "tsx watch src/workers/sync-count-worker.ts",
-    "workers": "concurrently \"pnpm start:expiry\" \"pnpm start:cooldown\""
+    "start:expiry": "npx tsx watch src/workers/expiry-worker.js",
+    "start:cooldown": "npx tsx watch src/workers/cooldown-worker.js",
+    "start:sync-count": "npx tsx watch src/workers/sync-count-worker.ts",
+    "start:workers": "concurrently \"pnpm start:expiry\" \"pnpm start:cooldown\" \"pnpm start:sync-count\""
   },
   "keywords": [],
   "author": "Bharat Chimariya",
@@ -28,11 +28,13 @@
     "express": "^5.1.0",
     "express-ejs-layouts": "^2.5.1",
     "express-session": "^1.18.2",
+    "ioredis": "^5.8.2",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^9.0.0",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
     "passport-local": "^1.0.0",
+    "rate-limiter-flexible": "^9.0.0",
     "redis": "^5.10.0"
   },
   "devDependencies": {
@@ -42,6 +44,7 @@
     "@types/express": "^5.0.5",
     "@types/express-ejs-layouts": "^2.5.4",
     "@types/express-session": "^1.18.2",
+    "@types/ioredis": "^5.0.0",
     "@types/node": "^24.10.1",
     "@types/passport": "^1.0.17",
     "@types/passport-local": "^1.0.38",

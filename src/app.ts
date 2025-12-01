@@ -17,6 +17,7 @@ import urlRoutes from './routes/url-routes';
 import { UrlHistory } from "./models/url-history-model";
 import { dirname } from "path";
 import { fileURLToPath } from "url";
+import { limitBy, rateLimiterMiddleware, signUpLimiter } from "./middleware/rate-limit";
 
 
 const __filename = fileURLToPath(import.meta.url);
@@ -25,6 +26,7 @@ const __dirname = dirname(__filename);
 dotenv.config();
 connectDB();
 const app = express();
+app.use(rateLimiterMiddleware);
 
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "../views"));
@@ -88,7 +90,7 @@ app.get("/dashboard", isAuthenticated, async (req: Request, res: Response) => {
 });
 
 // REGISTER
-app.post("/register", async (req, res) => {
+app.post("/register", limitBy(signUpLimiter) ,async (req, res) => {
   const { email, password } = req.body;
 
   if (await getUser(email)) {

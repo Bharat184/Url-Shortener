@@ -2,10 +2,7 @@ import { RateLimiterRedis } from "rate-limiter-flexible";
 import Redis from "ioredis";
 import { Request, Response, NextFunction } from "express";
 
-const redisClient = new Redis({
-  host: process.env.HOST,
-  port: 6379,
-});
+const redisClient = new Redis(process.env.REDIS_URL);
 
 export const shortenLimiter = new RateLimiterRedis({
   storeClient: redisClient,

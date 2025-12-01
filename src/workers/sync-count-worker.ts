@@ -6,8 +6,13 @@ import dotenv from "dotenv";
 dotenv.config();
 await connectDB();
 
-const subscriber = createClient();
-const redisClient = createClient();
+const subscriber = createClient({
+  url: process.env.REDIS_URL || "redis://localhost:6379"
+});
+
+const redisClient = createClient({
+  url: process.env.REDIS_URL || "redis://localhost:6379"
+});
 
 await subscriber.connect();
 await redisClient.connect();

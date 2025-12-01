@@ -3,21 +3,21 @@ import Redis from "ioredis";
 import { Request, Response, NextFunction } from "express";
 
 const redisClient = new Redis({
-  host: "localhost",
+  host: process.env.HOST,
   port: 6379,
 });
 
 export const shortenLimiter = new RateLimiterRedis({
   storeClient: redisClient,
   keyPrefix: "shorten-limit",
-  points: 10,
+  points: 5,
   duration: 60 * 2,
 });
 
 export const signUpLimiter = new RateLimiterRedis({
   storeClient: redisClient,
   keyPrefix: "signup-limit",
-  points: 2,
+  points: 6,
   duration: 10 * 60,
 });
 
@@ -32,10 +32,10 @@ export const limitBy = (limiter: RateLimiterRedis) => {
   };
 };
 
-export const ratelimiter = new RateLimiterRedis({
+export const rateLimiter = new RateLimiterRedis({
   storeClient: redisClient,
-  keyPrefix: "signup-limit",
-  points: 50,
+  keyPrefix: "rate-limit",
+  points: 150,
   duration: 1 * 60,
 });
 
@@ -47,7 +47,7 @@ export const rateLimiterMiddleware = async (req: Request, res: Response, next: N
   }
 
   try {
-    await ratelimiter.consume(req.ip);
+    await rateLimiter.consume(req.ip);
     next();
   } catch {
     res.status(429).json({ message: "Too many requests" });

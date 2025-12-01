@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { createShortUrl } from "../services/shorten-service";
+import { createShortUrl } from "../services/shorten-service.js";
 
 export const shortenController = async (req: Request, res: Response) => {
   try {

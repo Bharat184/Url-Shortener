@@ -1,5 +1,5 @@
-import { connectDB } from "../config/db";
-import { ShortCodes } from "../models/short-code-model";
+import { connectDB } from "../config/db.js";
+import { ShortCodes } from "../models/short-code-model.js";
 import dotenv from "dotenv";
 
 dotenv.config();

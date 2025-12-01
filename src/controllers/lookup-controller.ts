@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import { resolveShortUrl } from "../services/lookup-service";
-import redisClient from "../config/redis-client";
+import { resolveShortUrl } from "../services/lookup-service.js";
+import redisClient from "../config/redis-client.js";
 
 export const lookupController = async (req: Request, res: Response) => {
   try {

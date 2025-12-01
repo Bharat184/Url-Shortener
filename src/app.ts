@@ -5,19 +5,19 @@ import bcrypt from "bcryptjs";
 import path from "path";
 import dotenv from "dotenv";
 import expressLayouts from "express-ejs-layouts";
-import { initPassport } from "./config/passport";
-import { isAuthenticated } from "./middleware/auth";
-import { isGuest } from "./middleware/guest";
+import { initPassport } from "./config/passport.js";
+import { isAuthenticated } from "./middleware/auth.js";
+import { isGuest } from "./middleware/guest.js";
 import cookieParser from "cookie-parser";
-import { jwtCreateToken } from "./utils/jwt-create-token";
-import { connectDB } from "./config/db";
-import userRoutes from './routes/user-routes';
-import { createUser, getUser } from "./services/user-service";
-import urlRoutes from './routes/url-routes';
-import { UrlHistory } from "./models/url-history-model";
+import { jwtCreateToken } from "./utils/jwt-create-token.js";
+import { connectDB } from "./config/db.js";
+import userRoutes from './routes/user-routes.js';
+import { createUser, getUser } from "./services/user-service.js";
+import urlRoutes from './routes/url-routes.js';
+import { UrlHistory } from "./models/url-history-model.js";
 import { dirname } from "path";
 import { fileURLToPath } from "url";
-import { limitBy, rateLimiterMiddleware, signUpLimiter } from "./middleware/rate-limit";
+import { limitBy, rateLimiterMiddleware, signUpLimiter } from "./middleware/rate-limit.js";
 
 
 const __filename = fileURLToPath(import.meta.url);
@@ -36,6 +36,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
 app.use(cookieParser());
 
+// skip this for redirection endpoint or find another way to rate limit.
 app.use(rateLimiterMiddleware);
 
 const viewData = {user: null, title: 'Home'};

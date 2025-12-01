@@ -1,8 +1,7 @@
-import mongoose from "mongoose";
-import { ShortCodes } from "../models/short-code-model";
-import { generateShortCode } from "../utils/generate-short-code";
+import { ShortCodes } from "../models/short-code-model.js";
+import { generateShortCode } from "../utils/generate-short-code.js";
 import dotenv from "dotenv";
-import { connectDB } from "../config/db";
+import { connectDB } from "../config/db.js";
 
 dotenv.config();
 

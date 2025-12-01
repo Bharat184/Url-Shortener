@@ -35,18 +35,12 @@ export const limitBy = (limiter: RateLimiterRedis) => {
 export const rateLimiter = new RateLimiterRedis({
   storeClient: redisClient,
   keyPrefix: "rate-limit",
-  points: 150,
+  points: 400,
   duration: 1 * 60,
 });
 
-const exemptRoutes = ["/:code"];
 export const rateLimiterMiddleware = async (req: Request, res: Response, next: NextFunction) => {
-  console.log("Method:", req.method, "Path:", req.path, "Route:", req.route?.path);
-  if (req.route && exemptRoutes.includes(req.route.path)) {
-    return next();
-  }
-
-  try {
+   try {
     await rateLimiter.consume(req.ip);
     next();
   } catch {

@@ -1,8 +1,8 @@
 import { Router } from "express";
-import { shortenController } from "../controllers/shorten-controller";
-import { lookupController } from "../controllers/lookup-controller";
-import { isAuthenticated } from "../middleware/auth";
-import { shortenLimiter, limitBy } from "../middleware/rate-limit";
+import { shortenController } from "../controllers/shorten-controller.js";
+import { lookupController } from "../controllers/lookup-controller.js";
+import { isAuthenticated } from "../middleware/auth.js";
+import { shortenLimiter, limitBy } from "../middleware/rate-limit.js";
 
 
 const router = Router();

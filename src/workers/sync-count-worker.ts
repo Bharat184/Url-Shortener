@@ -1,6 +1,6 @@
 import { createClient } from "redis";
-import { UrlHistory } from "../models/url-history-model";
-import { connectDB } from "../config/db";
+import { UrlHistory } from "../models/url-history-model.js";
+import { connectDB } from "../config/db.js";
 import dotenv from "dotenv";
 
 dotenv.config();

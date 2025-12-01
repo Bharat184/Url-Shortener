@@ -2,7 +2,7 @@ import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import bcrypt from "bcryptjs";
-import { createUser, getUser } from "../services/user-service";
+import { createUser, getUser } from "../services/user-service.js";
 
 export function initPassport() {
   // LOCAL STRATEGY

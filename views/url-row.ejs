@@ -1,35 +1,42 @@
-<tr class="border-b">
-  <td class="py-2 px-3">
+<tr class="hover:bg-gray-800 transition-colors duration-150">
+  <!-- Short URL -->
+  <td class="px-4 py-3">
     <a href="/<%= url.shortCode %>" target="_blank"
-      class="text-blue-600 font-medium">
+      class="text-blue-400 font-semibold underline">
       <%= url.shortCode %>
     </a>
   </td>
 
-  <td class="py-2 px-3 max-w-sm">
-  <a href="<%= url.longUrl %>" target="_blank"
-     class="block text-gray-700 hover:text-blue-600 break-all line-clamp-2"
-     title="<%= url.longUrl %>">
-    <%= new URL(url.longUrl).hostname %>
-    <span class="text-gray-500">/...</span>
-  </a>
-</td>
-
-
-  <td class="py-2 px-3 text-center">
-    <%= url.clickCount %>
+  <!-- Destination URL -->
+  <td class="px-4 py-3 max-w-xs truncate text-gray-300">
+    <a href="<%= url.longUrl %>" target="_blank"
+      class="hover:text-blue-400"
+      title="<%= url.longUrl %>">
+      <%= new URL(url.longUrl).hostname %>
+      <span class="text-gray-500">/...</span>
+    </a>
   </td>
 
-  <td class="py-2 px-3 text-center font-medium
-    <%= url.status === "active" ? "text-green-600" : "text-red-600" %>">
-    <%= url.status %>
+  <!-- Click Count -->
+  <td class="px-4 py-3 text-center">
+    <span class="px-2 py-1 bg-gray-900 text-gray-100 rounded-md text-xs font-semibold">
+      <%= url.clickCount %>
+    </span>
   </td>
 
-  <td class="py-2 px-3 text-center">
+  <!-- Status -->
+  <td class="px-4 py-3 text-center">
+    <span class="font-semibold text-sm
+      <%= url.status === 'active' ? 'text-green-400' : 'text-red-400' %>">
+      <%= url.status %>
+    </span>
+  </td>
+
+  <!-- Copy Button -->
+  <td class="px-4 py-3 text-center">
     <button
       onclick="navigator.clipboard.writeText('<%= baseUrl + '/' + url.shortCode %>')"
-      class="bg-gray-200 hover:bg-gray-300 text-sm px-2 py-1 rounded"
-    >
+      class="bg-gray-700 hover:bg-gray-600 text-gray-200 px-3 py-1 rounded-lg text-sm transition">
       Copy
     </button>
   </td>

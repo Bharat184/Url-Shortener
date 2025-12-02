@@ -5,6 +5,12 @@ import bcrypt from "bcryptjs";
 import { createUser, getUser } from "../services/user-service.js";
 
 export function initPassport() {
+
+  let callbackURL = '/auth/google/callback';
+  if (process.env.BASE_URL ?? null) {
+    callbackURL = process.env.BASE_URL + callbackURL;
+  }
+
   // LOCAL STRATEGY
   passport.use(
     new LocalStrategy(
@@ -28,7 +34,7 @@ export function initPassport() {
       {
         clientID: process.env.GOOGLE_CLIENT_ID || "",
         clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
-        callbackURL: "/auth/google/callback",
+        callbackURL,
       },
       async (accessToken, refreshToken, profile, done) => {
         const email = profile.emails?.[0].value;

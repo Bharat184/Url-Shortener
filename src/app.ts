@@ -1,23 +1,18 @@
 import express, {Request, Response } from "express";
 import session from "express-session";
 import passport from "passport";
-import bcrypt from "bcryptjs";
-import path from "path";
+import path, { dirname } from "path";
 import dotenv from "dotenv";
 import expressLayouts from "express-ejs-layouts";
 import { initPassport } from "./config/passport.js";
 import { isAuthenticated } from "./middleware/auth.js";
-import { isGuest } from "./middleware/guest.js";
 import cookieParser from "cookie-parser";
-import { jwtCreateToken } from "./utils/jwt-create-token.js";
 import { connectDB } from "./config/db.js";
-import userRoutes from './routes/user-routes.js';
-import { createUser, getUser } from "./services/user-service.js";
 import urlRoutes from './routes/url-routes.js';
 import { UrlHistory } from "./models/url-history-model.js";
-import { dirname } from "path";
 import { fileURLToPath } from "url";
-import { limitBy, rateLimiterMiddleware, signUpLimiter } from "./middleware/rate-limit.js";
+import {  rateLimiterMiddleware } from "./middleware/rate-limit.js";
+import authRoutes from './routes/auth-routes.js';
 
 
 const __filename = fileURLToPath(import.meta.url);
@@ -49,7 +44,6 @@ app.use(
     saveUninitialized: false,
   })
 );
-
 app.use(passport.initialize());
 app.use(passport.session());
 app.use((req: any, res, next) => {
@@ -60,19 +54,8 @@ app.use((req: any, res, next) => {
 initPassport();
 
 /* ROUTES */
-app.use('/user', userRoutes);
-
 app.get("/", isAuthenticated, (req, res) => {
   res.redirect('/dashboard');
-  // res.render("home", { ...viewData, user: req.user });
-});
-
-app.get("/login", isGuest, (req, res) => {
-  res.render("login", {...viewData, title: 'Login'});
-});
-
-app.get("/register", isGuest, (req, res) => {
-  res.render("register", {...viewData, title: 'Register'});
 });
 
 app.get("/dashboard", isAuthenticated, async (req: Request, res: Response) => {
@@ -92,69 +75,9 @@ app.get("/dashboard", isAuthenticated, async (req: Request, res: Response) => {
   });
 });
 
-// REGISTER
-app.post("/register", limitBy(signUpLimiter) ,async (req, res) => {
-  const { email, password } = req.body;
 
-  if (await getUser(email)) {
-    return res.redirect('/login');
-  }
-
-  const hashed = await bcrypt.hash(password, 10);
-
-  // TempDb.users.push(userData);
-  const user = await createUser({email, password: hashed});
-  const token = jwtCreateToken(user._id.toString());
-  res.cookie('token', token, {httpOnly: true});
-  res.redirect("/");
-});
-
-// LOCAL LOGIN
-app.post(
-  "/login",
-  (req, res, next) => {
-      passport.authenticate("local", (err, user) => {
-      if (!user || err) {
-        return res.status(401).json({ message: err ? "Sign in with google only enabled" : "Invalid credentials" });
-      }
-
-      const token = jwtCreateToken(user._id.toString());
-
-      res.cookie("token", token, { httpOnly: true });
-      res.redirect("/");
-    })(req, res, next);
-  }
-);
-
-// GOOGLE LOGIN
-app.get(
-  "/auth/google",
-  passport.authenticate("google", { scope: ["profile", "email"] })
-);
-
-app.get(
-  "/auth/google/callback",
-  (req, res, next) => {
-  passport.authenticate("google", (err, user) => {
-    if (!user) {
-      return res.status(401).json({ message: "Invalid credentials" });
-    }
-
-    const token = jwtCreateToken(user._id.toString());
-
-    res.cookie("token", token, { httpOnly: true });
-    return res.redirect("/");
-  })(req, res, next);
-}
-);
-
-// LOGOUT
-app.get("/logout", (req, res) => {
-  res.clearCookie("token");
-  res.redirect("/login");
-});
-
+app.use('/', authRoutes);
 app.use('/', urlRoutes);
 
 
-app.listen(3000, () => console.log("Server running on http://localhost:3000"));
+app.listen(process.env.PORT, () => console.log(`Server running on ${process.env.BASE_URL}`));

@@ -1,22 +1,26 @@
-<section>
+<section class="max-w-4xl mx-auto mt-10 text-gray-200">
   <!-- Shorten Form -->
-  <form action="/shorten" method="POST" class="flex gap-2 mb-6">
+  <form action="/shorten" method="POST"
+    class="flex flex-col md:flex-row gap-3 bg-[#111827] p-4 rounded-xl shadow-lg border border-gray-700">
+    
     <input
       name="longUrl"
       type="url"
       placeholder="Enter long URL here..."
-      class="flex-1 p-2 border rounded"
+      class="flex-1 bg-gray-900 text-gray-300 placeholder-gray-500 px-3 py-2 rounded-lg border border-gray-700 focus:outline-none focus:border-blue-500"
       required
     />
+
     <input
-     name="expiresAt"
-     type="date"
-     class="p-2 border rounded"
-     required
+      name="expiresAt"
+      type="date"
+      class="bg-gray-900 text-gray-300 px-3 py-2 rounded-lg border border-gray-700 focus:outline-none focus:border-blue-500"
+      required
     />
+
     <button
       type="submit"
-      class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+      class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition duration-200 font-semibold"
     >
       Shorten
     </button>
@@ -24,33 +28,38 @@
 
   <!-- Show Result -->
   <% if (shortUrl) { %>
-    <div class="bg-green-100 border border-green-400 px-3 py-2 rounded mb-6">
-      Short URL: 
-      <a href="<%= shortUrl %>" class="text-blue-600 font-bold ml-2" target="_blank">
+    <div
+      class="mt-6 bg-green-900 border border-green-600 px-4 py-3 rounded w-full text-green-300 font-medium">
+      Short URL:
+      <a href="<%= shortUrl %>"
+        class="text-blue-400 font-bold underline ml-2"
+        target="_blank">
         <%= shortUrl %>
       </a>
     </div>
   <% } %>
 
-  <!-- URL History Table -->
-  <h2 class="text-lg font-semibold mb-3">Your URLs</h2>
+  <!-- URL History -->
+  <h2 class="text-xl font-semibold mt-10 mb-4">Your URLs</h2>
 
-  <table class="w-full bg-white rounded shadow overflow-hidden">
-    <thead class="bg-gray-200 text-left">
-      <tr>
-        <th class="py-2 px-3">Short</th>
-        <th class="py-2 px-3">Destination</th>
-        <th class="py-2 px-3 text-center">Clicks</th>
-        <th class="py-2 px-3 text-center">Status</th>
-        <th class="py-2 px-3 text-center">Action</th>
-      </tr>
-    </thead>
+  <div class="overflow-x-auto bg-[#111827] border border-gray-800 rounded-xl shadow-lg">
+    <table class="w-full text-sm">
+      <thead class="bg-gray-900 text-gray-400 uppercase text-xs">
+        <tr>
+          <th class="py-3 px-4 text-left">Short</th>
+          <th class="py-3 px-4 text-left">Destination</th>
+          <th class="py-3 px-4 text-center">Clicks</th>
+          <th class="py-3 px-4 text-center">Status</th>
+          <th class="py-3 px-4 text-center">Action</th>
+        </tr>
+      </thead>
 
-    <tbody>
-      <% urls.forEach(url => { %>
-        <%- include("./url-row", { url }) %>
-      <% }) %>
-    </tbody>
-  </table>
+      <tbody class="divide-y divide-gray-700">
+        <% urls.forEach(url => { %>
+          <%- include("./url-row", { url }) %>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
 
 </section>

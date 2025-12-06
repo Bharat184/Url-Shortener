@@ -17,19 +17,14 @@ export const lookupController = async (req: Request, res: Response) => {
       await redisClient.set(doc.shortCode, originalUrl);
     }
 
-    // if (!originalUrl) {
-    //   return res.status(404).send("Short URL not found or expired");
-    // }
-
      // Increment counter in Redis
     const count = await redisClient.incr(`clicks:${code}`);
 
     // Publish only shortId - no heavy data
     await redisClient.publish("click-events", code);
-
     return res.redirect(originalUrl.toString());
   } catch (err) {
-    console.error("Lookup Error:", err);
-    return res.status(500).send("Server Error");
+    req.flash("error", err.name);
+    return res.redirect('/');
   }
 };

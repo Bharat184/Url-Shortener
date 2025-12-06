@@ -13,6 +13,7 @@ import { UrlHistory } from "./models/url-history-model.js";
 import { fileURLToPath } from "url";
 import {  rateLimiterMiddleware } from "./middleware/rate-limit.js";
 import authRoutes from './routes/auth-routes.js';
+import flash from "express-flash";
 
 
 const __filename = fileURLToPath(import.meta.url);
@@ -44,6 +45,8 @@ app.use(
     saveUninitialized: false,
   })
 );
+app.use(flash());
+
 app.use(passport.initialize());
 app.use(passport.session());
 app.use((req: any, res, next) => {

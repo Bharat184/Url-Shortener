@@ -1,4 +1,5 @@
 import { connectDB } from "../config/db.js";
+import redisClient from "../config/redis-client.js";
 import { ShortCodes } from "../models/short-code-model.js";
 import { UrlHistory } from "../models/url-history-model.js";
 import dotenv from "dotenv";
@@ -35,6 +36,7 @@ async function expiryWorker() {
       }
     );
 
+    await redisClient.del(url.shortCode);
     console.log(`Expired URL: ${url.shortCode}`);
   }
   if (toExpire) {

@@ -4,6 +4,7 @@ export interface UserType {
   email: string;
   password?: string; // optional for Google users
   googleId?: number | null; // null for normal auth users
+  isVerified?: boolean;
 }
 
 export interface UserDocument extends UserType, Document {
@@ -19,6 +20,10 @@ const userSchema = new mongoose.Schema<UserDocument>({
     type: Number,
     unique: true,
     sparse: true, // Unique applies ONLY to non-null
+  },
+  isVerified: {
+    type: Boolean,
+    default: false,
   }
 }, {
   timestamps: true

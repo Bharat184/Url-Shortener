@@ -17,12 +17,13 @@ export function initPassport() {
       { usernameField: "email" },
       async (email, password, done) => {
         const user = await getUser(email);
-        if (!user) return done(null, false);
-        if (!user?.password) return done(true, user);
+        if (!user) return done('User not found', null);
+        if (!user?.password) return done('Sign in with google to continue...', user);
+        if (!(user.isVerified ?? true)) return done('Account not verified', null);
 
         bcrypt.compare(password, user.password, (err, match) => {
           if (match) return done(null, user);
-          return done(null, false);
+          return done('Invalid Password', false);
         });
       }
     )

@@ -9,9 +9,8 @@ export const shortenController = async (req: Request, res: Response) => {
     const expiryDate = expiresAt ? new Date(expiresAt + "T23:59:59Z") : new Date();
     const result = await createShortUrl(userId, longUrl, expiryDate);
     return res.redirect(`/dashboard?shortUrl=${result.code}`);
-    // return res.status(201).json(result);
   } catch (err) {
-    console.error("Shorten Error:", err);
-    return res.status(503).json({ error: "Try again later" });
+    req.flash("error", err.name);
+    return res.redirect('/');
   }
 };

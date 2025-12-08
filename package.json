@@ -8,11 +8,13 @@
     "dev": "npx tsx watch src/app.ts",
     "build": "tsc && npx @tailwindcss/cli -i ./input.css -o ./public/css/output.css",
     "start": "node dist/app.js",
+    "start:workers": "node dist/workers/expiry-worker.js & node dist/workers/cooldown-worker.js & node dist/workers/sync-count-worker.js.js & node dist/workers/precompute-keys.js",
     "build-css": "npx @tailwindcss/cli -i ./input.css -o ./public/css/output.css --watch",
-    "start:expiry": "npx tsx watch src/workers/expiry-worker.js",
-    "start:cooldown": "npx tsx watch src/workers/cooldown-worker.js",
+    "start:expiry": "npx tsx watch src/workers/expiry-worker.ts",
+    "start:cooldown": "npx tsx watch src/workers/cooldown-worker.ts",
     "start:sync-count": "npx tsx watch src/workers/sync-count-worker.ts",
-    "start:workers": "concurrently \"pnpm start:expiry\" \"pnpm start:cooldown\" \"pnpm start:sync-count\""
+    "start:pre-compute-keys": "npx tsx watch src/workers/precompute-keys.ts",
+    "start:workers-dev": "concurrently \"pnpm start:expiry\" \"pnpm start:cooldown\" \"pnpm start:sync-count\""
   },
   "keywords": [],
   "author": "Bharat Chimariya",

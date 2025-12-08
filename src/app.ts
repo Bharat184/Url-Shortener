@@ -62,8 +62,7 @@ app.get("/", isAuthenticated, (req, res) => {
 });
 
 app.get("/dashboard", isAuthenticated, async (req: Request, res: Response) => {
-  // @ts-ignore
-  const userId = req.user!._id;
+  const userId = req.user._id;
    const urls = await UrlHistory.find({ userId })
     .sort({ createdAt: -1 })
     .lean();

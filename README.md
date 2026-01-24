@@ -199,7 +199,6 @@ FREE → ACTIVE → EXPIRED → COOLDOWN → FREE
 * 🔳 QR code generation per short link
 * 🕒 Extend / renew expiry from dashboard
 * 🌑 Rate Limiter
-* 🔄 Redis caching for super-fast redirect
 * 📦 Docker / Kubernetes deployment config
 
 ---

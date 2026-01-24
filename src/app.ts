@@ -33,7 +33,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
 app.use(cookieParser());
 
-// skip this for redirection endpoint or find another way to rate limit.
 app.use(rateLimiterMiddleware);
 
 const viewData = {user: null, title: 'Home'};
@@ -77,9 +76,7 @@ app.get("/dashboard", isAuthenticated, async (req: Request, res: Response) => {
   });
 });
 
-
 app.use('/', authRoutes);
 app.use('/', urlRoutes);
-
 
 app.listen(process.env.PORT, () => console.log(`Server running on ${process.env.BASE_URL}`));

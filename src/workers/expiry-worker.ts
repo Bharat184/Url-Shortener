@@ -6,40 +6,44 @@ import dotenv from "dotenv";
 
 dotenv.config();
 connectDB().then(() => {
-    console.log("⏳ Expiry worker started...");
-    setTimeout(expiryWorker, 0);
+  console.log("⏳ Expiry worker started...");
+  setTimeout(expiryWorker, 0);
 });
+const timeoutTime = 5 * 60 * 1000;
 
 async function expiryWorker() {
-  const now = new Date();
+  try {
+    const now = new Date();
 
-  // Step 1: Expire URLs whose expiry date has passed
-  const toExpire = await UrlHistory.find({
-    status: "active",
-    expiresAt: { $lt: now }
-  });
+    // Step 1: Expire URLs whose expiry date has passed
+    const toExpire = await UrlHistory.find({
+      status: "active",
+      expiresAt: { $lt: now },
+    });
 
-  for (const url of toExpire) {
-    // Mark Url as expired
-    url.status = "expired";
-    await url.save();
+    for (const url of toExpire) {
+      // Mark Url as expired
+      url.status = "expired";
+      await url.save();
 
-    // Move short code → cooldown
-    await ShortCodes.updateOne(
-      { activeHistoryId: url._id },
-      {
-        $set: {
-          status: "cooldown",
-          activeHistoryId: null,
-          cooldownUntil: new Date(now.getTime() + 24 * 60 * 60 * 1000) // 24 hours cooldown
-        }
-      }
-    );
+      // Move short code → cooldown
+      await ShortCodes.updateOne(
+        { activeHistoryId: url._id },
+        {
+          $set: {
+            status: "cooldown",
+            activeHistoryId: null,
+            cooldownUntil: new Date(now.getTime() + 24 * 60 * 60 * 1000), // 24 hours cooldown
+          },
+        },
+      );
 
-    await redisClient.del(url.shortCode);
-    console.log(`Expired URL: ${url.shortCode}`);
-  }
-  if (toExpire) {
-    setTimeout(expiryWorker, toExpire ? 5000 : 10000);
+      await redisClient.del(url.shortCode);
+      console.log(`Expired URL: ${url.shortCode}`);
+    }
+    setTimeout(expiryWorker, timeoutTime);
+  } catch (err) {
+    console.error(err.message);
+    process.exit(0);
   }
 }

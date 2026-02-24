@@ -7,6 +7,7 @@ connectDB().then(() => {
     console.log("♻️ Cooldown worker started...");
     setTimeout(cooldownWorker, 0);
 });
+const timeoutTime = 20 * 60 * 1000;
 
 async function cooldownWorker() {
   const now = new Date();
@@ -23,7 +24,7 @@ async function cooldownWorker() {
 
     console.log(`Released code: ${code.code}`);
   }
-  setTimeout(cooldownWorker, readyToRelease ? 5000 : 10000);
+  setTimeout(cooldownWorker, timeoutTime);
 }
 
 

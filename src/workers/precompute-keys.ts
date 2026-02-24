@@ -5,9 +5,10 @@ import { connectDB } from "../config/db.js";
 
 dotenv.config();
 
-const MONGO_URI = process.env.MONGO_URI!;
 const MIN_POOL_SIZE = 200;
 const BATCH_SIZE = 20;
+
+await connectDB();
 
 async function getFreeKeyCount() {
   return ShortCodes.countDocuments({ status: "free" });
@@ -20,7 +21,7 @@ async function insertBatch(count: number) {
     codes.add(generateShortCode(7));
   }
 
-  const docs = [...codes].map(code => ({
+  const docs = [...codes].map((code) => ({
     code,
     status: "free",
   }));
@@ -34,26 +35,32 @@ async function insertBatch(count: number) {
   }
 }
 
+const timeoutTime = 2 * 60 * 1000;
+
 async function refillPool() {
-  await connectDB();
+  try {
+    const freeCount = await getFreeKeyCount();
+    console.log("Current free key count:", freeCount);
 
-  const freeCount = await getFreeKeyCount();
-  console.log("Current free key count:", freeCount);
+    if (freeCount >= MIN_POOL_SIZE) {
+      console.log("Pool sufficient. No refill needed.");
+    } else {
+      const need = MIN_POOL_SIZE - freeCount;
+      const batches = Math.ceil(need / BATCH_SIZE);
 
-  if (freeCount >= MIN_POOL_SIZE) {
-    console.log("Pool sufficient. No refill needed.");
-    return;
-  }
+      console.log(`Need ${need} keys → ${batches} batch(es)`);
 
-  const need = MIN_POOL_SIZE - freeCount;
-  const batches = Math.ceil(need / BATCH_SIZE);
+      for (let i = 0; i < batches; i++) {
+        const amount = Math.min(BATCH_SIZE, need - i * BATCH_SIZE);
+        await insertBatch(amount);
+      }
+    }
 
-  console.log(`Need ${need} keys → ${batches} batch(es)`);
-
-  for (let i = 0; i < batches; i++) {
-    const amount = Math.min(BATCH_SIZE, need - i * BATCH_SIZE);
-    await insertBatch(amount);
+    setTimeout(refillPool, timeoutTime);
+  } catch (err) {
+    console.error(err.message);
+    process.exit(0);
   }
 }
 
-refillPool().then(() => process.exit(0));
+refillPool();

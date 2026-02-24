@@ -1,17 +1,122 @@
 services:
+  # --- Main Web Application ---
   app:
-    build: .
+    build:
+      context: .
+      target: ${NODE_ENV}
     ports:
       - "3000:3000"
-    volumes:
-      - .:/app
-      - /app/node_modules
+    # volumes:
+    #   - .:/app
+    #   - /app/node_modules
+    env_file:
+      - .env
     environment:
+      - NODE_ENV=${NODE_ENV}
       - REDIS_URL=redis://cache:6379
     depends_on:
-      - cache
+      cache:
+        condition: service_healthy
+    command: >
+      sh -c "if [ \"$NODE_ENV\" = \"production\" ]; then
+               node dist/app.js;
+             else
+               npx tsx src/app.ts;
+             fi"
 
+  expiry-worker:
+    build:
+      context: .
+      target: ${NODE_ENV}
+    # volumes:
+    #   - .:/app
+    #   - /app/node_modules
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - REDIS_URL=redis://cache:6379
+    depends_on:
+      cache:
+        condition: service_healthy
+    command: >
+      sh -c "if [ \"$NODE_ENV\" = \"production\" ]; then
+               node dist/workers/expiry-worker.js;
+             else
+               npx tsx src/workers/expiry-worker.ts;
+             fi"
+
+  cooldown-worker:
+    build:
+      context: .
+      target: ${NODE_ENV}
+    # volumes:
+    #   - .:/app
+    #   - /app/node_modules
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - REDIS_URL=redis://cache:6379
+    depends_on:
+      cache:
+        condition: service_healthy
+    command: >
+      sh -c "if [ \"$NODE_ENV\" = \"production\" ]; then
+               node dist/workers/cooldown-worker.js;
+             else
+               npx tsx src/workers/cooldown-worker.ts;
+             fi"
+  
+  precompute-keys:
+    build:
+      context: .
+      target: ${NODE_ENV}
+    # volumes:
+    #   - .:/app
+    #   - /app/node_modules
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - REDIS_URL=redis://cache:6379
+    depends_on:
+      cache:
+        condition: service_healthy
+    command: >
+      sh -c "if [ \"$NODE_ENV\" = \"production\" ]; then
+              node dist/workers/precompute-keys.js;
+            else
+              npx tsx src/workers/precompute-keys.ts;
+            fi"
+
+  sync-count-worker:
+    build:
+      context: .
+      target: ${NODE_ENV}
+    # volumes:
+    #   - .:/app
+    #   - /app/node_modules
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - REDIS_URL=redis://cache:6379
+    depends_on:
+      cache:
+        condition: service_healthy
+    command: >
+      sh -c "if [ \"$NODE_ENV\" = \"production\" ]; then
+              node dist/workers/sync-count-worker.js;
+            else
+              npx tsx src/workers/sync-count-worker.ts;
+            fi"
+
+  # --- Shared Redis Instance ---
   cache:
     image: redis:alpine
-    ports:
-      - "6380:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5

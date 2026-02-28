@@ -2,45 +2,62 @@ import { createClient } from "redis";
 import { UrlHistory } from "../models/url-history-model.js";
 import { connectDB } from "../config/db.js";
 import dotenv from "dotenv";
+import { COUNTER_HASH_KEY } from "../constants/index.js";
+import mongoose from "mongoose";
 
 dotenv.config();
 await connectDB();
 
-const subscriber = createClient({
-  url: process.env.REDIS_URL || "redis://localhost:6379"
-});
-
 const redisClient = createClient({
-  url: process.env.REDIS_URL || "redis://localhost:6379"
+  url: process.env.REDIS_URL || "redis://localhost:6379",
 });
 
-await subscriber.connect();
 await redisClient.connect();
 
-const CLICK_THRESHOLD = 3; // tune as per load
+async function flushToDatabase() {
+  const TEMP_KEY = `${COUNTER_HASH_KEY}_temp_${Date.now()}`;
 
-console.log("Worker listening for click events...");
-
-await subscriber.subscribe("click-events", async (shortCode) => {
   try {
-    const key = `clicks:${shortCode}`;
-    const count = await redisClient.get(key);
-    if (!count) return;
+    // 1. ATOMIC RENAME: Move current counts to a temp key
+    // This allows new clicks to keep flowing into the main COUNTER_HASH_KEY
+    const exists = await redisClient.exists(COUNTER_HASH_KEY);
+    if (!exists) return;
 
-    const num = parseInt(count.toString());
+    await redisClient.rename(COUNTER_HASH_KEY, TEMP_KEY);
 
-    if (num >= CLICK_THRESHOLD) {
-      console.log(`Syncing ${num} clicks for ${shortCode} to DB`);
+    // 2. FETCH from temp key
+    const allCounters = await redisClient.hGetAll(TEMP_KEY);
+    const shortCodes = Object.keys(allCounters);
 
-      await UrlHistory.updateOne(
-        { shortCode },
-        { $inc: { clickCount: num } }
-      );
+    if (shortCodes.length === 0) return;
 
-      // Reset only after DB success
-      await redisClient.del(key);
-    }
+    console.log(`Flushing ${shortCodes.length} items to DB...`);
+
+    // 3. BULK UPDATE: One single query to MongoDB instead of multiple
+    const operations = shortCodes.map((shortCode) => ({
+      updateOne: {
+        filter: { shortCode, status: 'active' },
+        update: { $inc: { clickCount: parseInt(allCounters[shortCode], 10) } },
+      },
+    }));
+
+
+    await UrlHistory.bulkWrite(operations);
+
+    // 4. CLEANUP: Delete the temp key
+    await redisClient.del(TEMP_KEY);
+    console.log("Sync complete.");
   } catch (err) {
-    console.error("Worker Error:", err);
+    console.error("Flush Error:", err);
+    // If it fails, the data is still in TEMP_KEY; you can retry later.
+  } finally {
+    await Promise.all([redisClient.quit(), mongoose.connection.close()]);
+
+    console.log("Connections closed. Exiting now.");
+
+    // 2. Now it is safe to exit
+    process.exit();
   }
-});
+}
+
+flushToDatabase();
